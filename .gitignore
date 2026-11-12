@@ -1,0 +1,21 @@
+out/
+build/
+*.apk
+*.ap_
+*.idsig
+
+# 签名密钥与口令：绝不入库
+*.jks
+*.keystore
+release.jks
+*.pem
+*.key
+
+# 工具链下载缓存
+dl/
+
+__pycache__/
+*.pyc
+node_modules/
+.DS_Store
+Thumbs.db

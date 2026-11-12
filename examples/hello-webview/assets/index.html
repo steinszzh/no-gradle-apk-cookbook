@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<title>无 Gradle 手工打包 · 示例页</title>
+<style>
+  :root { --bg:#101820; --card:#19232f; --line:#2b3a49; --fg:#e8e5dd; --dim:#93a3b2; --accent:#e8b468; }
+  * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  body { margin:0; min-height:100vh; background:var(--bg); color:var(--fg);
+         font-family:system-ui,-apple-system,"Noto Sans CJK SC",sans-serif;
+         padding:24px 18px calc(24px + env(safe-area-inset-bottom)); }
+  h1 { font-size:20px; margin:4px 0 6px; font-weight:600; }
+  .sub { color:var(--dim); font-size:13px; line-height:1.7; margin-bottom:20px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:14px;
+          padding:18px; margin-bottom:14px; }
+  .n { font-size:44px; font-weight:600; color:var(--accent); line-height:1.1; }
+  .hint { color:var(--dim); font-size:12px; margin-top:6px; }
+  button { width:100%; padding:13px; margin-top:10px; border:0; border-radius:10px;
+           background:var(--accent); color:#101820; font-size:15px; font-weight:600; }
+  button.ghost { background:transparent; color:var(--dim); border:1px solid var(--line); font-weight:400; }
+  .panel { display:none; margin-top:12px; padding:12px; border:1px dashed var(--line);
+           border-radius:10px; color:var(--dim); font-size:13px; line-height:1.7; }
+  .panel.on { display:block; }
+  code { color:var(--accent); }
+</style>
+</head>
+<body>
+  <h1>构建成功</h1>
+  <div class="sub">这个页面来自 APK 的 <code>assets/</code>，没有网络请求、没有第三方 SDK。<br>
+  下面的计数会经 <code>NativeStore</code> 桥写进 SharedPreferences，杀掉进程再开仍在。</div>
+
+  <div class="card">
+    <div class="n" id="n">0</div>
+    <div class="hint">累计点击次数（持久化演示）</div>
+    <button id="add">点我 +1</button>
+    <button id="reset" class="ghost">清零</button>
+    <button id="toggle" class="ghost">关于这个 APK</button>
+    <div class="panel" id="panel">
+      aapt2 → javac → d8 → zipalign → apksigner<br>
+      无 Gradle、无 Android Studio、无 AndroidX，整包通常只有几百 KB。
+    </div>
+  </div>
+
+<script>
+var KEY = 'clicks';
+var store = {
+  get: function (k) {
+    try { if (window.NativeStore) return window.NativeStore.get(k); } catch (e) {}
+    try { return localStorage.getItem(k) || ''; } catch (e) { return ''; }
+  },
+  set: function (k, v) {
+    try { if (window.NativeStore) { window.NativeStore.set(k, v); return; } } catch (e) {}
+    try { localStorage.setItem(k, v); } catch (e) {}
+  }
+};
+
+var n = parseInt(store.get(KEY), 10) || 0;
+var el = document.getElementById('n');
+var panel = document.getElementById('panel');
+
+function render() { el.textContent = String(n); }
+
+document.getElementById('add').addEventListener('click', function () {
+  n += 1; store.set(KEY, String(n)); render();
+});
+document.getElementById('reset').addEventListener('click', function () {
+  n = 0; store.set(KEY, '0'); render();
+});
+document.getElementById('toggle').addEventListener('click', function () {
+  panel.classList.toggle('on');
+});
+
+// 返回键：面板打开时先关面板（返回 "1" 表示已消费），否则交给 Activity 退出
+window.__back = function () {
+  if (panel.classList.contains('on')) { panel.classList.remove('on'); return '1'; }
+  return '0';
+};
+
+render();
+</script>
+</body>
+</html>
